@@ -98,3 +98,17 @@ class EntryAndReportTests(TestCase):
         self.assertEqual(report["actual_minutes"], 90)
         self.assertEqual(report["manual_minutes"], 30)
         self.assertEqual(report["timer_minutes"], 60)
+
+
+class LogEntryDayUrlTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+
+        AppSettings.load()
+        self.user = get_user_model().objects.create_user("lilu", password="51525555")
+        self.client.force_login(self.user)
+
+    def test_human_date_path_redirects_to_log_form(self):
+        response = self.client.get("/entries/Nov. 8, 2026/", HTTP_HOST="127.0.0.1")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/entries/?date=2026-11-08")

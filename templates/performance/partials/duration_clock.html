@@ -8,8 +8,8 @@
       <circle class="range-clock-track" cx="100" cy="100" r="78"></circle>
       <path class="range-clock-arc" :d="arcPath"></path>
     </svg>
-    <template x-for="n in [12,1,2,3,4,5,6,7,8,9,10,11]" :key="n">
-      <span class="range-clock-num" :style="numStyle(n)" x-text="n"></span>
+    <template x-for="n in faceHours" :key="n">
+      <span class="range-clock-num" :style="numStyle(n)" x-text="String(n).padStart(2, '0')"></span>
     </template>
     <div class="range-clock-center">
       <strong class="tabular" x-text="durationLabel"></strong>
@@ -48,10 +48,6 @@
           <b class="tabular" x-text="endClock.m"></b>
         </div>
       </div>
-    </div>
-    <div class="range-period">
-      <button type="button" :class="period === 'am' && 'is-on'" @click="period = 'am'">AM</button>
-      <button type="button" :class="period === 'pm' && 'is-on'" @click="period = 'pm'">PM</button>
     </div>
     <input type="hidden" name="starts_at" :value="startsAtValue">
   {% endif %}

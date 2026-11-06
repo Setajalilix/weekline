@@ -19,6 +19,7 @@ urlpatterns = [
     path("entries/", views.log_entry, name="log-entry"),
     path("entries/<int:pk>/", views.edit_entry, name="edit-entry"),
     path("entries/<int:pk>/delete/", views.delete_entry, name="delete-entry"),
+    path("entries/<path:day>/", views.log_entry_day, name="log-entry-day"),
     path("timer/", views.timer, name="timer"),
     path("timer/state/", views.timer_state, name="timer-state"),
     path("timer/start/", views.timer_start, name="timer-start"),

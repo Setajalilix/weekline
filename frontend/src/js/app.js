@@ -5,6 +5,7 @@ import {
   Calendar,
   CalendarDays,
   CalendarRange,
+  ChevronDown,
   Clock3,
   History,
   LayoutDashboard,
@@ -26,11 +27,31 @@ window.Alpine = Alpine;
 document.addEventListener("alpine:init", () => {
   Alpine.data("logSheet", (date) => ({
     date: date || "",
-    onGoal(event) {
-      const activity = this.$refs.activity;
-      const select = event.target;
-      if (!activity || select.selectedIndex <= 0) return;
-      activity.value = select.options[select.selectedIndex].text;
+    onGoalTitle(title) {
+      if (title && this.$refs.activity) this.$refs.activity.value = title;
+    },
+  }));
+
+  Alpine.data("goalPicker", (selected = "") => ({
+    open: false,
+    value: String(selected || ""),
+    label: "No goal",
+    color: "",
+    init() {
+      this.sync();
+    },
+    sync() {
+      const opt = this.$el.querySelector(`[data-goal-id="${this.value}"]`);
+      this.label = opt?.dataset.title || "No goal";
+      this.color = opt?.dataset.color || "";
+    },
+    pick(id, title, color) {
+      this.value = id ? String(id) : "";
+      this.label = title;
+      this.color = color || "";
+      this.open = false;
+      this.$dispatch("goal-picked", { title: id ? title : "" });
+      this.$nextTick(() => window.paintIcons?.());
     },
   }));
 
@@ -79,23 +100,22 @@ document.addEventListener("alpine:init", () => {
     },
   }));
 
-  const CIRCLE = 12 * 60;
+  const CIRCLE = 24 * 60;
   const STEP = 5;
   const RADIUS = 78;
+  const FACE_HOURS = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22];
 
   Alpine.data("rangeClock", (hours = 1, minutes = 0, startsAt = "") => {
     const duration = Math.max(STEP, Number(hours) * 60 + Number(minutes) || 60);
     let start = 9 * 60;
-    let period = "am";
     if (startsAt && /^\d{1,2}:\d{2}/.test(startsAt)) {
       const [hh, mm] = startsAt.split(":").map(Number);
-      period = hh >= 12 ? "pm" : "am";
-      start = (hh % 12) * 60 + mm;
+      start = ((hh % 24) * 60 + mm) % CIRCLE;
     }
     return {
       start,
-      period,
-      end: (start + duration) % CIRCLE,
+      faceHours: FACE_HOURS,
+      end: (start + Math.min(duration, CIRCLE)) % CIRCLE,
       drag: null,
       get durationMins() {
         let diff = this.end - this.start;
@@ -113,32 +133,24 @@ document.addEventListener("alpine:init", () => {
         if (this.h) return `${this.h}h`;
         return `${this.m}m`;
       },
-      get startMins24() {
-        const hour12 = Math.floor(this.start / 60) % 12;
-        const minute = this.start % 60;
-        const hour = this.period === "pm" ? (hour12 === 0 ? 12 : hour12 + 12) : hour12;
-        return hour * 60 + minute;
-      },
       get startsAtValue() {
-        const hour = Math.floor(this.startMins24 / 60);
-        const minute = this.startMins24 % 60;
-        return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+        return this.format24(this.start);
       },
       get rangeLabel() {
-        return `${this.format24(this.startMins24)} – ${this.format24(this.startMins24 + this.durationMins)}`;
+        return `${this.format24(this.start)} – ${this.format24(this.start + this.durationMins)}`;
       },
       clockParts(mins) {
-        const wrapped = ((mins % (24 * 60)) + 24 * 60) % (24 * 60);
+        const wrapped = ((mins % CIRCLE) + CIRCLE) % CIRCLE;
         return {
           h: String(Math.floor(wrapped / 60)).padStart(2, "0"),
           m: String(wrapped % 60).padStart(2, "0"),
         };
       },
       get startClock() {
-        return this.clockParts(this.startMins24);
+        return this.clockParts(this.start);
       },
       get endClock() {
-        return this.clockParts(this.startMins24 + this.durationMins);
+        return this.clockParts(this.start + this.durationMins);
       },
       get arcPath() {
         const from = this.polar(this.start);
@@ -147,12 +159,10 @@ document.addEventListener("alpine:init", () => {
         return `M ${from.x} ${from.y} A ${RADIUS} ${RADIUS} 0 ${large} 1 ${to.x} ${to.y}`;
       },
       format24(mins) {
-        const wrapped = ((mins % (24 * 60)) + 24 * 60) % (24 * 60);
-        const hour24 = Math.floor(wrapped / 60);
+        const wrapped = ((mins % CIRCLE) + CIRCLE) % CIRCLE;
+        const hour = Math.floor(wrapped / 60);
         const minute = wrapped % 60;
-        const hour = hour24 % 12 || 12;
-        const suffix = hour24 >= 12 ? "PM" : "AM";
-        return `${hour}:${String(minute).padStart(2, "0")} ${suffix}`;
+        return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
       },
       polar(mins) {
         const deg = (mins / CIRCLE) * 360;
@@ -164,7 +174,7 @@ document.addEventListener("alpine:init", () => {
         return { left: `${x / 2}%`, top: `${y / 2}%` };
       },
       numStyle(n) {
-        const mins = (n % 12) * 60;
+        const mins = (n % 24) * 60;
         const deg = (mins / CIRCLE) * 360;
         const rad = ((deg - 90) * Math.PI) / 180;
         const r = 52;
@@ -207,6 +217,7 @@ const lucideIcons = {
   Calendar,
   CalendarDays,
   CalendarRange,
+  ChevronDown,
   Clock3,
   History,
   LayoutDashboard,

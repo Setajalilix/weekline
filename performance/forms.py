@@ -150,7 +150,6 @@ class ManualEntryForm(StyledFormMixin, forms.Form):
             self.fields["weekly_goal"].queryset = WeeklyGoal.objects.none()
         self.fields["weekly_goal"].label_from_instance = lambda obj: obj.title
         self.fields["activity"].widget.attrs["x-ref"] = "activity"
-        self.fields["weekly_goal"].widget.attrs["@change"] = "onGoal($event)"
         if not self.is_bound:
             self.fields["tracked_date"].initial = WeekService.today()
 

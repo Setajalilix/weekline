@@ -4,6 +4,7 @@
   action="{% if entry %}{% url 'edit-entry' entry.pk %}{% else %}{% url 'log-entry' %}{% endif %}"
   class="log-form"
   x-data="logSheet('{{ entry_form.tracked_date.value|as_iso|default:today_date.isoformat }}')"
+  @goal-picked="onGoalTitle($event.detail.title)"
 >
   {% csrf_token %}
   <input type="hidden" name="next" value="{{ next|default:request.path }}">
@@ -41,13 +42,13 @@
       </label>
     {% endif %}
     <label class="field">
-      <span>{{ entry_form.weekly_goal.label }}</span>
-      {{ entry_form.weekly_goal }}
-    </label>
-    <label class="field">
       <span>{{ entry_form.category.label }}</span>
       {{ entry_form.category }}
     </label>
+    <div class="field field-wide">
+      <span>{{ entry_form.weekly_goal.label }}</span>
+      {% include "performance/partials/goal_picker.html" with field=entry_form.weekly_goal %}
+    </div>
   </div>
 
   {% include "performance/partials/duration_clock.html" with hours=entry_form.hours.value minutes=entry_form.minutes.value starts_at=entry_form.starts_at.value|as_hm timed=1 %}

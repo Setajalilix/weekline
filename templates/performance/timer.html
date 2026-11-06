@@ -26,7 +26,7 @@
         </label>
         <label class="field">
           <span>{{ start_form.weekly_goal.label }}</span>
-          {{ start_form.weekly_goal }}
+          {% include "performance/partials/goal_picker.html" with field=start_form.weekly_goal %}
         </label>
         <button class="btn-flip" type="submit">Start</button>
       </form>

@@ -1,0 +1,49 @@
+{% with selected=field.value|default_if_none:"" %}
+<div class="goal-picker" x-data="goalPicker('{{ selected }}')" @keydown.escape.window="open = false" @click.outside="open = false">
+  <input type="hidden" name="{{ field.html_name }}" value="{{ selected }}" :value="value">
+  <button
+    class="goal-picker-btn"
+    type="button"
+    :class="color && 'is-tinted'"
+    :style="color && `--goal:${color}`"
+    @click="open = !open"
+    :aria-expanded="open"
+  >
+    <span class="goal-bar" :style="color && `background:${color}`"></span>
+    <span class="goal-dot" :style="color ? `background:${color}` : ''"></span>
+    <span class="goal-picker-label" x-text="label"></span>
+    <i data-lucide="chevron-down"></i>
+  </button>
+  <div class="goal-menu" x-show="open" x-cloak>
+    <button
+      class="goal-option"
+      type="button"
+      :class="!value && 'is-on'"
+      data-goal-id=""
+      data-title="No goal"
+      data-color=""
+      @click="pick('', 'No goal', '')"
+    >
+      <span class="goal-bar"></span>
+      <span class="goal-dot is-empty"></span>
+      No goal
+    </button>
+    {% for goal in field.field.queryset %}
+      <button
+        class="goal-option"
+        type="button"
+        :class="value == '{{ goal.pk }}' && 'is-on'"
+        :style="'--goal: {{ goal.color }}'"
+        data-goal-id="{{ goal.pk }}"
+        data-title="{{ goal.title }}"
+        data-color="{{ goal.color }}"
+        @click="pick('{{ goal.pk }}', '{{ goal.title|escapejs }}', '{{ goal.color|escapejs }}')"
+      >
+        <span class="goal-bar" style="background: {{ goal.color }}"></span>
+        <span class="goal-dot" style="background: {{ goal.color }}"></span>
+        {{ goal.title }}
+      </button>
+    {% endfor %}
+  </div>
+</div>
+{% endwith %}

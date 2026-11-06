@@ -350,6 +350,112 @@ body {
   background-size: 1rem;
 }
 
+.goal-picker {
+  position: relative;
+  width: 100%;
+}
+
+.goal-picker-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  min-height: 3.55rem;
+  padding: 0.75rem 1.1rem 0.75rem 0.85rem;
+  border-radius: 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #17191f;
+  color: var(--color-paper);
+  text-align: left;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.goal-picker-btn.is-tinted {
+  border-color: color-mix(in srgb, var(--goal) 55%, transparent);
+  background: color-mix(in srgb, var(--goal) 16%, #17191f);
+}
+
+.goal-picker-btn svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-left: auto;
+  color: var(--color-mist);
+  transition: transform 180ms var(--ease-out-strong);
+}
+
+.goal-picker-btn[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.goal-picker-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.goal-bar {
+  width: 0.28rem;
+  align-self: stretch;
+  min-height: 1.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+}
+
+.goal-dot {
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  flex-shrink: 0;
+}
+
+.goal-dot.is-empty {
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.22);
+  background: transparent;
+}
+
+.goal-menu {
+  position: absolute;
+  z-index: 30;
+  inset-inline: 0;
+  top: calc(100% + 0.45rem);
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #1c1e26;
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+.goal-menu::-webkit-scrollbar {
+  display: none;
+}
+
+.goal-option {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  min-height: 3.35rem;
+  padding: 0.8rem 0.95rem;
+  border-radius: 0.95rem;
+  color: var(--color-paper);
+  font-size: 1.05rem;
+  text-align: left;
+}
+
+.goal-option:hover,
+.goal-option.is-on {
+  background: color-mix(in srgb, var(--goal, var(--color-accent)) 18%, transparent);
+}
+
+.goal-option .goal-bar {
+  min-height: 1.7rem;
+}
+
 .field-number {
   -moz-appearance: textfield;
 }
@@ -679,7 +785,8 @@ input[type="number"] {
 }
 
 .range-clock.is-timed .range-clock-num {
-  font-size: 0.95rem;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .time-digits {
@@ -938,25 +1045,6 @@ input[type="number"] {
 
 [x-cloak] {
   display: none !important;
-}
-
-.range-period {
-  display: flex;
-  gap: 0.4rem;
-}
-
-.range-period button {
-  min-width: 3.25rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0.35rem 0.7rem;
-  color: var(--color-paper);
-}
-
-.range-period button.is-on {
-  background: var(--color-accent);
-  color: var(--color-ink);
-  border-color: transparent;
 }
 
 .time-wheels {

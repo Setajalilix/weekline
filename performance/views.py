@@ -1,9 +1,10 @@
 import json
-from datetime import date, time, timedelta
+from datetime import date, datetime, time, timedelta
 
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.views import LoginView, LogoutView
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods, require_POST
 
@@ -37,6 +38,22 @@ class WeeklineLoginView(LoginView):
 
 class WeeklineLogoutView(LogoutView):
     next_page = "login"
+
+
+def _parse_day_label(raw: str) -> date | None:
+    text = (raw or "").strip()
+    if not text:
+        return None
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        pass
+    for fmt in ("%b. %d, %Y", "%b %d, %Y", "%B %d, %Y", "%Y/%m/%d"):
+        try:
+            return datetime.strptime(text, fmt).date()
+        except ValueError:
+            continue
+    return None
 
 
 def _plan_from_request(request) -> WeeklyPlan:
@@ -242,6 +259,14 @@ def daily(request):
             "next": day + timedelta(days=1),
         },
     )
+
+
+@require_http_methods(["GET"])
+def log_entry_day(request, day):
+    parsed = _parse_day_label(day)
+    if parsed is None:
+        raise Http404()
+    return redirect(f"/entries/?date={parsed.isoformat()}")
 
 
 @require_http_methods(["GET", "POST"])
