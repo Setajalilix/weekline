@@ -51,6 +51,12 @@ class TimerLifecycleTests(TestCase):
         self.assertIsNotNone(first.starts_at)
         self.assertIsNotNone(first.ends_at)
 
+    def test_finish_rejects_under_five_minutes(self):
+        TimerService.start(self.activity, self.goal)
+        with self.assertRaises(ValueError):
+            TimerService.finish(4)
+        self.assertEqual(TimeEntry.objects.count(), 0)
+
     def test_discard_creates_no_entry(self):
         TimerService.start(self.activity, self.goal)
         TimerService.reset()

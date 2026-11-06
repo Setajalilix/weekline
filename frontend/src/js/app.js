@@ -8,8 +8,13 @@ import {
   Clock3,
   History,
   LayoutDashboard,
+  LogOut,
+  Pencil,
+  Save,
   Settings,
   Target,
+  Trash2,
+  X,
   createIcons,
 } from "lucide";
 import { initCharts } from "./charts";
@@ -19,6 +24,61 @@ window.htmx = htmx;
 window.Alpine = Alpine;
 
 document.addEventListener("alpine:init", () => {
+  Alpine.data("logSheet", (date) => ({
+    date: date || "",
+    onGoal(event) {
+      const activity = this.$refs.activity;
+      const select = event.target;
+      if (!activity || select.selectedIndex <= 0) return;
+      activity.value = select.options[select.selectedIndex].text;
+    },
+  }));
+
+  Alpine.data("durationWheels", (hours = 1, minutes = 0) => ({
+    h: Math.max(0, Number(hours) || 0),
+    m: Math.min(59, Math.max(0, Number(minutes) || 0)),
+    maxHours: 168,
+    item: 44,
+    get hoursList() {
+      return Array.from({ length: Math.max(this.maxHours, this.h) + 1 }, (_, i) => i);
+    },
+    get minutesList() {
+      return Array.from({ length: 60 }, (_, i) => i);
+    },
+    get label() {
+      if (this.h && this.m) return `${this.h}h ${String(this.m).padStart(2, "0")}m`;
+      if (this.h) return `${this.h}h`;
+      return `${this.m}m`;
+    },
+    ready() {
+      this.$nextTick(() => {
+        this.$nextTick(() => {
+          const sample = this.$refs.hours?.querySelector(".time-wheel-item");
+          if (sample) this.item = sample.offsetHeight;
+          this.jump("hours", this.h);
+          this.jump("minutes", this.m);
+        });
+      });
+    },
+    jump(which, value) {
+      const el = this.$refs[which];
+      if (!el) return;
+      el.scrollTop = value * this.item;
+    },
+    pick(which, value) {
+      if (which === "hours") this.h = value;
+      else this.m = value;
+      this.jump(which, value);
+    },
+    sync(which) {
+      const el = this.$refs[which];
+      if (!el || !this.item) return;
+      const value = Math.round(el.scrollTop / this.item);
+      if (which === "hours") this.h = Math.max(0, Math.min(this.maxHours, value));
+      else this.m = Math.max(0, Math.min(59, value));
+    },
+  }));
+
   const CIRCLE = 12 * 60;
   const STEP = 5;
   const RADIUS = 78;
@@ -66,6 +126,19 @@ document.addEventListener("alpine:init", () => {
       },
       get rangeLabel() {
         return `${this.format24(this.startMins24)} – ${this.format24(this.startMins24 + this.durationMins)}`;
+      },
+      clockParts(mins) {
+        const wrapped = ((mins % (24 * 60)) + 24 * 60) % (24 * 60);
+        return {
+          h: String(Math.floor(wrapped / 60)).padStart(2, "0"),
+          m: String(wrapped % 60).padStart(2, "0"),
+        };
+      },
+      get startClock() {
+        return this.clockParts(this.startMins24);
+      },
+      get endClock() {
+        return this.clockParts(this.startMins24 + this.durationMins);
       },
       get arcPath() {
         const from = this.polar(this.start);
@@ -130,19 +203,28 @@ document.addEventListener("alpine:init", () => {
 
 Alpine.start();
 
+const lucideIcons = {
+  Calendar,
+  CalendarDays,
+  CalendarRange,
+  Clock3,
+  History,
+  LayoutDashboard,
+  LogOut,
+  Pencil,
+  Save,
+  Settings,
+  Target,
+  Trash2,
+  X,
+};
+
+window.paintIcons = function paintIcons() {
+  createIcons({ icons: lucideIcons });
+};
+
 function enhance() {
-  createIcons({
-    icons: {
-      Calendar,
-      CalendarDays,
-      CalendarRange,
-      Clock3,
-      History,
-      LayoutDashboard,
-      Settings,
-      Target,
-    },
-  });
+  window.paintIcons();
   initCharts();
   initFlipClock();
 }

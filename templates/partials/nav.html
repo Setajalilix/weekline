@@ -1,7 +1,11 @@
-<div class="flex h-full flex-col gap-6 p-5">
-  <a href="/" class="block">
-    <p class="text-[11px] uppercase tracking-[0.22em] text-mist">Personal week</p>
-    <p class="mt-1 text-lg font-semibold tracking-tight">Weekline</p>
+{% load static %}
+<div class="sidebar-stack">
+  <a href="/" class="sidebar-brand">
+    <img class="sidebar-mark" src="{% static 'favicon.ico' %}" alt="">
+    <span class="sidebar-brand-copy">
+      <span class="eyebrow">Personal week</span>
+      <span class="sidebar-brand-name">Weekline</span>
+    </span>
   </a>
   <nav class="flex flex-col gap-1">
     {% for name, label, href, icon in nav_items %}
@@ -12,13 +16,19 @@
     {% endfor %}
   </nav>
   {% if active_timer %}
-    <a href="/timer/" class="rounded-2xl border border-accent/30 bg-accent/10 px-4 py-3 text-sm">
-      <p class="text-mist">Focus session</p>
-      <p class="mt-1 font-medium">{{ active_timer.activity_title }}</p>
+    <a href="/timer/" class="sidebar-session">
+      <i data-lucide="clock-3" class="h-4 w-4"></i>
+      <span>
+        <span class="sidebar-session-kicker">Focus session</span>
+        <span class="sidebar-session-title">{{ active_timer.activity_title }}</span>
+      </span>
     </a>
   {% endif %}
   <form method="post" action="{% url 'logout' %}" class="mt-auto">
     {% csrf_token %}
-    <button class="nav-link w-full text-left" type="submit">Sign out</button>
+    <button class="nav-link w-full" type="submit">
+      <i data-lucide="log-out" class="h-4 w-4"></i>
+      <span>Sign out</span>
+    </button>
   </form>
 </div>

@@ -93,14 +93,14 @@ class TimerService:
     @classmethod
     def suggested_minutes(cls, session: TimerSession) -> int:
         seconds = cls.elapsed_seconds(session)
-        minutes = max(1, round(seconds / 60)) if seconds > 0 else 1
+        minutes = max(5, round(seconds / 60)) if seconds > 0 else 5
         return minutes
 
     @classmethod
     @transaction.atomic
     def finish(cls, duration_minutes: int, note: str = "", tracked_date=None) -> TimeEntry:
-        if duration_minutes < 1:
-            raise ValueError("Duration must be at least 1 minute.")
+        if duration_minutes < 5:
+            raise ValueError("Save at least 5 minutes.")
         session = (
             TimerSession.objects.select_for_update(of=("self",))
             .select_related("activity", "weekly_goal")

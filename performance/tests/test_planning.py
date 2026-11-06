@@ -2,7 +2,7 @@ from datetime import date
 
 from django.test import TestCase
 
-from performance.models import AppSettings, PlannedSession, WeeklyPlan
+from performance.models import AppSettings, PlannedSession, WeeklyGoal, WeeklyPlan
 from performance.services.planning import PlanningService
 
 
@@ -43,3 +43,10 @@ class PlanningTests(TestCase):
         self.assertNotEqual(reused.id, self.goal.id)
         self.assertEqual(later.goals.count(), 1)
         self.assertEqual(self.plan.goals.count(), 1)
+
+    def test_delete_goal_removes_sessions_keeps_plan(self):
+        PlanningService.set_session(self.goal, date(2026, 10, 31), 60)
+        PlanningService.delete_goal(self.goal)
+        self.assertFalse(WeeklyGoal.objects.filter(pk=self.goal.pk).exists())
+        self.assertEqual(PlannedSession.objects.count(), 0)
+        self.assertTrue(WeeklyPlan.objects.filter(pk=self.plan.pk).exists())

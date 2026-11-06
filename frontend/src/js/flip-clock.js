@@ -1,6 +1,3 @@
-import Tick from "@pqina/flip";
-import "@pqina/flip/dist/flip.min.css";
-
 let clockTimer = null;
 
 function elapsedFromState(state) {
@@ -12,30 +9,27 @@ function elapsedFromState(state) {
   return Math.max(0, (state.accumulated_seconds || 0) + Math.floor((Date.now() - started) / 1000));
 }
 
-function toHms(totalSeconds) {
-  const safe = Math.max(0, Math.floor(totalSeconds));
-  return {
-    hours: Math.floor(safe / 3600),
-    minutes: Math.floor((safe % 3600) / 60),
-    seconds: safe % 60,
-  };
+function pad(value) {
+  return String(value).padStart(2, "0");
 }
 
-function bindClock(root, seconds) {
-  const existing = Tick.DOM.find(root);
-  if (existing) {
-    existing.value = toHms(seconds);
-    return existing;
-  }
-  const tick = Tick.DOM.create(root, { credits: false });
-  if (tick) tick.value = toHms(seconds);
-  return tick;
+function renderClock(root, totalSeconds) {
+  const safe = Math.max(0, Math.floor(totalSeconds));
+  const parts = {
+    hours: pad(Math.floor(safe / 3600)),
+    minutes: pad(Math.floor((safe % 3600) / 60)),
+    seconds: pad(safe % 60),
+  };
+  root.querySelectorAll("[data-flap]").forEach((card) => {
+    const next = parts[card.dataset.flap];
+    if (card.textContent !== next) card.textContent = next;
+  });
 }
 
 export function initFlipClock(resync = false) {
   const stage = document.getElementById("timer-stage");
   if (!stage) return;
-  const root = stage.querySelector(".tick");
+  const root = stage.querySelector(".flap-clock");
   if (!root) return;
 
   let state = {};
@@ -45,12 +39,12 @@ export function initFlipClock(resync = false) {
     state = {};
   }
 
-  bindClock(root, elapsedFromState(state));
+  renderClock(root, elapsedFromState(state));
 
   if (clockTimer) window.clearInterval(clockTimer);
   if (state.status === "running") {
     clockTimer = window.setInterval(() => {
-      bindClock(root, elapsedFromState(state));
+      renderClock(root, elapsedFromState(state));
     }, 250);
   }
 

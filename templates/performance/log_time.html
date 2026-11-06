@@ -3,13 +3,17 @@
 {% block title %}Log time · Weekline{% endblock %}
 
 {% block content %}
-<section class="mx-auto max-w-2xl">
+<section class="mx-auto max-w-3xl">
   <header>
     <p class="eyebrow">Manual log</p>
     <h1 class="display">Log time</h1>
-    <p class="lede">Add work you already finished. You don’t need the timer.</p>
+    <p class="lede">Add work you already finished.</p>
   </header>
-  <article class="card mt-8">
+  <article class="card log-sheet mt-8">
+    <div class="log-tabs">
+      <a href="{% url 'timer' %}">Timer</a>
+      <span class="is-on">Log time</span>
+    </div>
     {% include "performance/partials/entry_form.html" with next="/calendar/" %}
   </article>
 </section>

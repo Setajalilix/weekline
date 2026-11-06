@@ -29,7 +29,7 @@
         </div>
         <div class="cal-month-grid">
           {% for label in weekday_labels %}
-            <span class="cal-month-dow">{{ label|slice:":1" }}</span>
+            <span class="cal-month-dow">{{ label }}</span>
           {% endfor %}
           {% for week in month_weeks %}
             {% for cell in week %}

@@ -1,5 +1,5 @@
 <div
-  class="range-clock"
+  class="range-clock {% if timed %}is-timed{% endif %}"
   x-data="rangeClock({{ hours|default_if_none:1 }}, {{ minutes|default_if_none:0 }}, '{{ starts_at|default:'' }}')"
 >
   <p class="range-clock-caption">{% if timed %}Drag the handles to set start and finish.{% else %}Set how long this should take.{% endif %}</p>
@@ -31,6 +31,24 @@
     ></button>
   </div>
   {% if timed %}
+    <div class="time-digits">
+      <div class="time-digit-block">
+        <span>Start</span>
+        <div class="time-digit-pair">
+          <b class="tabular" x-text="startClock.h"></b>
+          <i>:</i>
+          <b class="tabular" x-text="startClock.m"></b>
+        </div>
+      </div>
+      <div class="time-digit-block">
+        <span>Finish</span>
+        <div class="time-digit-pair">
+          <b class="tabular" x-text="endClock.h"></b>
+          <i>:</i>
+          <b class="tabular" x-text="endClock.m"></b>
+        </div>
+      </div>
+    </div>
     <div class="range-period">
       <button type="button" :class="period === 'am' && 'is-on'" @click="period = 'am'">AM</button>
       <button type="button" :class="period === 'pm' && 'is-on'" @click="period = 'pm'">PM</button>

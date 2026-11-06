@@ -4,40 +4,19 @@
 {% block title %}Daily Tracker · Weekline{% endblock %}
 
 {% block content %}
-<section class="mx-auto max-w-4xl">
-  <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-    <div>
-      <p class="eyebrow">Daily tracker</p>
-      <h1 class="display">{{ day.date|date:"l, M j" }}</h1>
-      <p class="lede">Tracked {{ day.total_minutes|duration }} · Planned {{ day.planned_minutes|duration }}</p>
-    </div>
-    <div class="flex gap-2">
-      <a class="btn-secondary" href="{% url 'daily' %}?date={{ prev.isoformat }}">Previous</a>
-      <a class="btn-secondary" href="{% url 'daily' %}?date={{ next.isoformat }}">Next</a>
-    </div>
+<section class="mx-auto max-w-3xl">
+  <header>
+    <p class="eyebrow">Daily tracker</p>
+    <h1 class="display">{{ day.date|date:"l, M j" }}</h1>
+    <p class="lede">Tracked {{ day.total_minutes|duration }}</p>
   </header>
 
-  <article class="card mt-8 p-6">
-    <h2 class="section-title">Planned sessions</h2>
-    {% if day.sessions %}
-      <ul class="mt-4 space-y-3">
-        {% for session in day.sessions %}
-          <li class="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-ink/40 px-4 py-3">
-            <div>
-              <p class="font-medium">{{ session.goal.title }}</p>
-              <p class="text-sm text-mist tabular">{{ session.duration_minutes|duration }}</p>
-            </div>
-            <form method="post" action="{% url 'timer-start-goal' session.goal.pk %}">
-              {% csrf_token %}
-              <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <button class="btn-primary" type="submit">Start timer</button>
-            </form>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p class="mt-4 text-sm text-mist">Nothing planned. You can still log time below.</p>
-    {% endif %}
+  <article class="card log-sheet mt-8">
+    <div class="log-tabs">
+      <a href="{% url 'timer' %}">Timer</a>
+      <span class="is-on">Log time</span>
+    </div>
+    {% include "performance/partials/entry_form.html" %}
   </article>
 
   <article class="card mt-6 p-6">
@@ -45,34 +24,36 @@
     {% if day.entries %}
       <ul class="mt-4 space-y-3">
         {% for entry in day.entries %}
-          <li class="rounded-2xl bg-ink/40 px-4 py-3">
-            <div class="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p class="font-medium">{{ entry.activity_title }}</p>
-                <p class="text-sm text-mist">{{ entry.get_source_display }} · <span class="tabular">{{ entry.duration_minutes|duration }}</span></p>
-                {% if entry.note %}<p class="mt-2 text-sm">{{ entry.note }}</p>{% endif %}
-              </div>
-              <div class="flex gap-2">
-                <a class="btn-ghost" href="{% url 'edit-entry' entry.pk %}">Edit</a>
-                <form method="post" action="{% url 'delete-entry' entry.pk %}">
-                  {% csrf_token %}
-                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                  <button class="btn-ghost" type="submit">Delete</button>
-                </form>
-              </div>
+          <li class="tracked-row">
+            <div>
+              <p class="font-medium">{{ entry.activity_title }}</p>
+              <p class="text-sm text-mist">
+                {{ entry.get_source_display }}
+                · <span class="tabular">{{ entry.duration_minutes|duration }}</span>
+                {% if entry.starts_at %}· {{ entry.starts_at|time:"H:i" }}–{{ entry.ends_at|time:"H:i" }}{% endif %}
+              </p>
+              {% if entry.note %}<p class="mt-2 text-sm">{{ entry.note }}</p>{% endif %}
+            </div>
+            <div class="flex gap-2">
+              <a class="btn-action btn-update" href="{% url 'edit-entry' entry.pk %}">
+                <i data-lucide="pencil"></i>
+                Edit
+              </a>
+              <form method="post" action="{% url 'delete-entry' entry.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button class="btn-action btn-delete" type="submit">
+                  <i data-lucide="trash-2"></i>
+                  Delete
+                </button>
+              </form>
             </div>
           </li>
         {% endfor %}
       </ul>
     {% else %}
-      <p class="mt-4 text-sm text-mist">No time yet. Log time or start the timer.</p>
+      <p class="mt-4 text-sm text-mist">Nothing logged for this day yet.</p>
     {% endif %}
-  </article>
-
-  <article class="card mt-6 p-6">
-    <h2 class="section-title">Log time</h2>
-    <p class="lede">Add work you already finished.</p>
-    {% include "performance/partials/entry_form.html" %}
   </article>
 </section>
 {% endblock %}

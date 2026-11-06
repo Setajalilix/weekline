@@ -15,6 +15,19 @@ COLOR_SWATCHES = [
     "#8EC8E8",
     "#F1E4C3",
     "#7A7D8A",
+    "#C9A227",
+    "#81A1C1",
+    "#D08770",
+    "#B48EAD",
+    "#88C0D0",
+    "#A3BE8C",
+    "#BF616A",
+    "#5E81AC",
+    "#EBCB8B",
+    "#FF8A65",
+    "#6EC8A0",
+    "#E6A8D7",
+    "#7EB6FF",
 ]
 
 
@@ -135,6 +148,9 @@ class ManualEntryForm(StyledFormMixin, forms.Form):
             self.fields["weekly_goal"].queryset = WeeklyGoal.objects.filter(plan=plan)
         else:
             self.fields["weekly_goal"].queryset = WeeklyGoal.objects.none()
+        self.fields["weekly_goal"].label_from_instance = lambda obj: obj.title
+        self.fields["activity"].widget.attrs["x-ref"] = "activity"
+        self.fields["weekly_goal"].widget.attrs["@change"] = "onGoal($event)"
         if not self.is_bound:
             self.fields["tracked_date"].initial = WeekService.today()
 
@@ -165,6 +181,7 @@ class TimerStartForm(StyledFormMixin, forms.Form):
         super().__init__(*args, **kwargs)
         if plan:
             self.fields["weekly_goal"].queryset = WeeklyGoal.objects.filter(plan=plan)
+        self.fields["weekly_goal"].label_from_instance = lambda obj: obj.title
 
 
 class TimerFinishForm(StyledFormMixin, forms.Form):
@@ -181,8 +198,8 @@ class TimerFinishForm(StyledFormMixin, forms.Form):
     def clean(self):
         cleaned = super().clean()
         total = cleaned.get("hours", 0) * 60 + cleaned.get("minutes", 0)
-        if total < 1:
-            raise forms.ValidationError("Save at least 1 minute.")
+        if total < 5:
+            raise forms.ValidationError("Save at least 5 minutes.")
         cleaned["duration_minutes"] = total
         starts_at = cleaned.get("starts_at")
         if starts_at:

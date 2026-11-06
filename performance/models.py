@@ -126,7 +126,7 @@ class WeeklyGoal(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.title} ({self.plan.starts_on})"
+        return self.title
 
 
 class PlannedSession(models.Model):

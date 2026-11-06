@@ -14,6 +14,15 @@ def duration(minutes):
 
 
 @register.filter
+def as_iso(value):
+    if not value:
+        return ""
+    if hasattr(value, "isoformat"):
+        return value.isoformat()[:10]
+    return str(value)[:10]
+
+
+@register.filter
 def as_hm(value):
     if not value:
         return ""

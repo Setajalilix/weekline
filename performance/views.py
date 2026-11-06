@@ -78,10 +78,19 @@ def overview(request):
     )
 
 
+def _planner_redirect(plan: WeeklyPlan, *, edit=None):
+    url = f"/planner/?week={plan.starts_on.isoformat()}"
+    if edit:
+        return redirect(f"{url}&edit={edit}")
+    return redirect(url)
+
+
 def planner(request):
     plan = _plan_from_request(request)
     report = ReportingService.week_report(plan)
     previous = WeeklyGoal.objects.select_related("activity", "plan").exclude(plan=plan).order_by("-plan__starts_on")[:20]
+    edit_raw = request.GET.get("edit")
+    edit_goal_id = int(edit_raw) if edit_raw and edit_raw.isdigit() else None
     return render(
         request,
         "performance/planner.html",
@@ -93,6 +102,7 @@ def planner(request):
             "previous_goals": previous,
             "days": WeekService.days_of(plan),
             "color_swatches": COLOR_SWATCHES,
+            "edit_goal_id": edit_goal_id,
         },
     )
 
@@ -116,7 +126,7 @@ def create_goal(request):
             messages.error(request, str(exc))
     else:
         messages.error(request, "Add a name and a target of at least 1 minute.")
-    return redirect(f"/planner/?week={plan.starts_on.isoformat()}")
+    return _planner_redirect(plan)
 
 
 @require_POST
@@ -134,7 +144,17 @@ def update_goal(request, pk):
         messages.success(request, "Goal updated.")
     else:
         messages.error(request, "The target must be at least 1 minute.")
-    return redirect(f"/planner/?week={goal.plan.starts_on.isoformat()}")
+    return _planner_redirect(goal.plan, edit=goal.pk)
+
+
+@require_POST
+def delete_goal(request, pk):
+    goal = get_object_or_404(WeeklyGoal, pk=pk)
+    plan = goal.plan
+    title = goal.title
+    PlanningService.delete_goal(goal)
+    messages.success(request, f"{title} removed from this week.")
+    return _planner_redirect(plan)
 
 
 @require_POST
@@ -154,7 +174,7 @@ def add_session(request, pk):
             messages.error(request, str(exc))
     else:
         messages.error(request, "Plan at least 1 minute on a day this week.")
-    return redirect(f"/planner/?week={goal.plan.starts_on.isoformat()}")
+    return _planner_redirect(goal.plan, edit=goal.pk)
 
 
 @require_POST
@@ -167,7 +187,7 @@ def move_session(request, pk):
             messages.success(request, "Session moved. Your weekly target did not change.")
         except ValueError as exc:
             messages.error(request, str(exc))
-    return redirect(f"/planner/?week={session.goal.plan.starts_on.isoformat()}")
+    return _planner_redirect(session.goal.plan, edit=session.goal_id)
 
 
 @require_POST
@@ -176,7 +196,7 @@ def delete_session(request, pk):
     week = session.goal.plan.starts_on
     PlanningService.delete_session(session)
     messages.success(request, "Day plan removed.")
-    return redirect(f"/planner/?week={week.isoformat()}")
+    return redirect(f"/planner/?week={week.isoformat()}&edit={session.goal_id}")
 
 
 @require_POST
@@ -425,7 +445,7 @@ def timer_finish(request):
         return redirect("timer")
     form = TimerFinishForm(request.POST)
     if not form.is_valid():
-        messages.error(request, "Check the time, then save.")
+        messages.error(request, "Save at least 5 minutes.")
         return redirect("timer")
     try:
         TimerService.finish(

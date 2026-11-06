@@ -1,35 +1,66 @@
 {% load weekline %}
-<form method="post" action="{% if entry %}{% url 'edit-entry' entry.pk %}{% else %}{% url 'log-entry' %}{% endif %}" class="log-form">
+<form
+  method="post"
+  action="{% if entry %}{% url 'edit-entry' entry.pk %}{% else %}{% url 'log-entry' %}{% endif %}"
+  class="log-form"
+  x-data="logSheet('{{ entry_form.tracked_date.value|as_iso|default:today_date.isoformat }}')"
+>
   {% csrf_token %}
   <input type="hidden" name="next" value="{{ next|default:request.path }}">
+  <input type="hidden" name="tracked_date" :value="date">
   {% if entry %}<input type="hidden" name="activity" value="{{ entry.activity_title }}">{% endif %}
 
-  {% include "performance/partials/duration_clock.html" with hours=entry_form.hours.value minutes=entry_form.minutes.value starts_at=entry_form.starts_at.value|as_hm timed=1 %}
+  <div class="day-picks">
+    <button
+      class="day-pick"
+      type="button"
+      :class="date === '{{ yesterday_date.isoformat }}' && 'is-on'"
+      @click="date = '{{ yesterday_date.isoformat }}'"
+    >
+      <span class="day-pick-kicker">Yesterday</span>
+      <strong>{{ yesterday_date|date:"l" }}</strong>
+      <span>{{ yesterday_date|date:"M j" }}</span>
+    </button>
+    <button
+      class="day-pick"
+      type="button"
+      :class="date === '{{ today_date.isoformat }}' && 'is-on'"
+      @click="date = '{{ today_date.isoformat }}'"
+    >
+      <span class="day-pick-kicker">Today</span>
+      <strong>{{ today_date|date:"l" }}</strong>
+      <span>{{ today_date|date:"M j" }}</span>
+    </button>
+  </div>
 
   <div class="log-fields">
-    <label class="field">
-      <span>{{ entry_form.activity.label }}</span>
-      {{ entry_form.activity }}
-    </label>
+    {% if not entry %}
+      <label class="field">
+        <span>{{ entry_form.activity.label }}</span>
+        {{ entry_form.activity }}
+      </label>
+    {% endif %}
     <label class="field">
       <span>{{ entry_form.weekly_goal.label }}</span>
       {{ entry_form.weekly_goal }}
     </label>
     <label class="field">
-      <span>{{ entry_form.tracked_date.label }}</span>
-      {{ entry_form.tracked_date }}
-    </label>
-    <label class="field">
       <span>{{ entry_form.category.label }}</span>
       {{ entry_form.category }}
     </label>
-    <label class="field field-wide">
-      <span>{{ entry_form.note.label }}</span>
-      {{ entry_form.note }}
-    </label>
   </div>
+
+  {% include "performance/partials/duration_clock.html" with hours=entry_form.hours.value minutes=entry_form.minutes.value starts_at=entry_form.starts_at.value|as_hm timed=1 %}
+
+  <label class="field field-wide">
+    <span>{{ entry_form.note.label }}</span>
+    {{ entry_form.note }}
+  </label>
   {% if entry_form.non_field_errors %}
     <p class="form-error">{{ entry_form.non_field_errors.0 }}</p>
   {% endif %}
-  <button class="btn-primary" type="submit">{% if entry %}Save changes{% else %}Save time{% endif %}</button>
+  <button class="btn-primary btn-action" type="submit">
+    <i data-lucide="save"></i>
+    {% if entry %}Update{% else %}Save time{% endif %}
+  </button>
 </form>

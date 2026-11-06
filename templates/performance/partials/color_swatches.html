@@ -5,9 +5,18 @@
       class="swatch"
       type="button"
       style="background: {{ swatch }}"
-      :class="color === '{{ swatch }}' && 'is-selected'"
+      :class="color.toLowerCase() === '{{ swatch|lower }}' && 'is-selected'"
       @click="color = '{{ swatch }}'"
       aria-label="Choose {{ swatch }}"
     ></button>
   {% endfor %}
+  <label class="swatch swatch-picker" :class="![{% for swatch in color_swatches %}'{{ swatch|lower }}'{% if not forloop.last %},{% endif %}{% endfor %}].includes(color.toLowerCase()) && 'is-selected'" :style="`background: ${color}`">
+    <span class="swatch-picker-plus" aria-hidden="true">+</span>
+    <input
+      type="color"
+      :value="color"
+      @input="color = $event.target.value"
+      aria-label="Pick a custom color"
+    >
+  </label>
 </div>

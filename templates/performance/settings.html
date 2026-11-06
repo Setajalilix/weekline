@@ -49,7 +49,10 @@
           <span>{{ category.name }}</span>
           <form method="post" action="{% url 'delete-category' category.pk %}">
             {% csrf_token %}
-            <button class="btn-ghost" type="submit">Delete</button>
+            <button class="btn-action btn-delete" type="submit">
+              <i data-lucide="trash-2"></i>
+              Delete
+            </button>
           </form>
         </li>
       {% empty %}

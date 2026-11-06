@@ -19,7 +19,7 @@
         <span>{{ goal_form.activity.label }}</span>
         {{ goal_form.activity }}
       </label>
-      {% include "performance/partials/duration_clock.html" with hours_name="target_hours" minutes_name="target_minutes" hours=1 minutes=0 %}
+      {% include "performance/partials/duration_wheels.html" with hours_name="target_hours" minutes_name="target_minutes" hours=1 minutes=0 %}
       <div class="log-fields">
         <label class="field">
           <span>{{ goal_form.category.label }}</span>
@@ -38,83 +38,147 @@
     </form>
   </article>
 
-  <div class="mt-8 space-y-6">
-    {% for row in report.goals %}
-      <article class="card">
-        <div class="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 class="text-xl font-semibold">{{ row.goal.title }}</h2>
-            <p class="mt-1 text-sm text-mist">Target {{ row.target_minutes|duration }} · Planned {{ row.allocated_minutes|duration }} · Tracked {{ row.actual_minutes|duration }}</p>
-          </div>
-          <span class="status-pill" style="background: {{ row.goal.color }}22; color: {{ row.goal.color }}">
-            {% if row.status == "completed" %}Done{% elif row.status == "partial" %}In progress{% else %}Not started{% endif %}
-          </span>
-        </div>
-        {% if row.goal.description %}<p class="mt-3 text-sm text-mist">{{ row.goal.description }}</p>{% endif %}
-
-        <div class="mt-5 overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="text-mist">
-              <tr>
-                {% for day in days %}
-                  <th class="pb-2 font-medium">{{ day|date:"D" }}</th>
-                {% endfor %}
+  <article class="card mt-8 overflow-hidden" x-data="{ editing: {{ edit_goal_id|default:'null' }} }">
+    <h2 class="section-title">Goals</h2>
+    {% if report.goals %}
+      <div class="mt-4 overflow-x-auto">
+        <table class="goal-table">
+          <thead>
+            <tr>
+              <th>Goal</th>
+              <th>Target</th>
+              <th>Planned</th>
+              <th>Tracked</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in report.goals %}
+              <tr class="{% if edit_goal_id == row.goal.pk %}is-open{% endif %}" :class="editing === {{ row.goal.pk }} && 'is-open'">
+                <td>
+                  <span class="goal-name">
+                    <span class="cal-dot" style="background: {{ row.goal.color }}"></span>
+                    {{ row.goal.title }}
+                  </span>
+                </td>
+                <td class="tabular">{{ row.target_minutes|duration }}</td>
+                <td class="tabular">{{ row.allocated_minutes|duration }}</td>
+                <td class="tabular">{{ row.actual_minutes|duration }}</td>
+                <td>
+                  <span class="status-pill" style="background: {{ row.goal.color }}22; color: {{ row.goal.color }}">
+                    {% if row.status == "completed" %}Done{% elif row.status == "partial" %}In progress{% else %}Not started{% endif %}
+                  </span>
+                </td>
+                <td class="goal-table-actions">
+                  <div class="goal-table-buttons">
+                    <button
+                      class="btn-action"
+                      type="button"
+                      :class="editing === {{ row.goal.pk }} ? 'btn-close' : 'btn-update'"
+                      @click="editing = editing === {{ row.goal.pk }} ? null : {{ row.goal.pk }}; $nextTick(() => window.paintIcons())"
+                    >
+                      <span class="btn-action-label" x-show="editing !== {{ row.goal.pk }}">
+                        <i data-lucide="pencil"></i>
+                        Edit
+                      </span>
+                      <span class="btn-action-label" x-show="editing === {{ row.goal.pk }}" x-cloak>
+                        <i data-lucide="x"></i>
+                        Close
+                      </span>
+                    </button>
+                    <form method="post" action="{% url 'delete-goal' row.goal.pk %}">
+                      {% csrf_token %}
+                      <button class="btn-action btn-delete" type="submit" onclick="return confirm('Remove {{ row.goal.title|escapejs }} from this week?')">
+                        <i data-lucide="trash-2"></i>
+                        Delete
+                      </button>
+                    </form>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              <tr>
-                {% for day in days %}
-                  <td class="pr-3 align-top">
-                    {% for session in row.goal.sessions.all %}
-                      {% if session.planned_date == day %}
-                        <p class="tabular">{{ session.duration_minutes|duration }}</p>
-                        <form method="post" action="{% url 'move-session' session.pk %}" class="mt-2 flex gap-1">
-                          {% csrf_token %}
-                          <input class="field-input !py-1" type="date" name="planned_date" value="{{ session.planned_date.isoformat }}">
-                          <button class="btn-ghost" type="submit">Move</button>
-                        </form>
-                        <form method="post" action="{% url 'delete-session' session.pk %}">
-                          {% csrf_token %}
-                          <button class="btn-ghost" type="submit">Remove</button>
-                        </form>
-                      {% endif %}
-                    {% endfor %}
-                  </td>
-                {% endfor %}
+              <template x-if="editing === {{ row.goal.pk }}">
+              <tr class="goal-editor-row">
+                <td colspan="6">
+                  <div class="goal-editor">
+                    {% if row.goal.description %}<p class="lede" style="margin-top:0">{{ row.goal.description }}</p>{% endif %}
+
+                    <div class="overflow-x-auto">
+                      <table class="w-full text-sm">
+                        <thead class="text-mist">
+                          <tr>
+                            {% for day in days %}
+                              <th class="pb-2 font-medium">{{ day|date:"D" }}</th>
+                            {% endfor %}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            {% for day in days %}
+                              <td class="pr-3 align-top">
+                                {% for session in row.goal.sessions.all %}
+                                  {% if session.planned_date == day %}
+                                    <p class="tabular">{{ session.duration_minutes|duration }}</p>
+                                    <form method="post" action="{% url 'move-session' session.pk %}" class="mt-2 flex gap-1">
+                                      {% csrf_token %}
+                                      <input class="field-input !py-1" type="date" name="planned_date" value="{{ session.planned_date.isoformat }}">
+                                      <button class="btn-ghost" type="submit">Move</button>
+                                    </form>
+                                    <form method="post" action="{% url 'delete-session' session.pk %}">
+                                      {% csrf_token %}
+                                      <button class="btn-action btn-delete" type="submit">
+                                        <i data-lucide="trash-2"></i>
+                                        Remove
+                                      </button>
+                                    </form>
+                                  {% endif %}
+                                {% endfor %}
+                              </td>
+                            {% endfor %}
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <form method="post" action="{% url 'add-session' row.goal.pk %}" class="mt-6 grid gap-3 sm:grid-cols-4">
+                      {% csrf_token %}
+                      <label class="field">Day <input class="field-input" type="date" name="planned_date" value="{{ plan.starts_on.isoformat }}"></label>
+                      <label class="field">Hours <input class="field-input field-number" type="number" name="hours" min="0" value="1"></label>
+                      <label class="field">Minutes <input class="field-input field-number" type="number" name="minutes" min="0" max="59" value="0"></label>
+                      <label class="field">Note <input class="field-input" type="text" name="note"></label>
+                      <div class="sm:col-span-4">
+                        <button class="btn-secondary" type="submit">Add to a day</button>
+                      </div>
+                    </form>
+
+                    <form method="post" action="{% url 'update-goal' row.goal.pk %}" class="mt-6 grid gap-4 border-t border-white/6 pt-6">
+                      {% csrf_token %}
+                      <input type="hidden" name="activity" value="{{ row.goal.title }}">
+                      {% include "performance/partials/duration_wheels.html" with hours_name="target_hours" minutes_name="target_minutes" hours=row.target_hours minutes=row.target_mins %}
+                      <div class="field">
+                        <span>Color</span>
+                        {% include "performance/partials/color_swatches.html" with value=row.goal.color %}
+                      </div>
+                      <label class="field">Notes <textarea class="field-input" name="description" rows="2">{{ row.goal.description }}</textarea></label>
+                      <div>
+                        <button class="btn-action btn-update" type="submit">
+                          <i data-lucide="save"></i>
+                          Update
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </td>
               </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <form method="post" action="{% url 'add-session' row.goal.pk %}" class="mt-6 grid gap-3 sm:grid-cols-4">
-          {% csrf_token %}
-          <label class="field">Day <input class="field-input" type="date" name="planned_date" value="{{ plan.starts_on.isoformat }}"></label>
-          <label class="field">Hours <input class="field-input field-number" type="number" name="hours" min="0" value="1"></label>
-          <label class="field">Minutes <input class="field-input field-number" type="number" name="minutes" min="0" max="59" value="0"></label>
-          <label class="field">Note <input class="field-input" type="text" name="note"></label>
-          <div class="sm:col-span-4">
-            <button class="btn-secondary" type="submit">Add to a day</button>
-          </div>
-        </form>
-
-        <form method="post" action="{% url 'update-goal' row.goal.pk %}" class="mt-6 grid gap-4 border-t border-white/6 pt-6">
-          {% csrf_token %}
-          <input type="hidden" name="activity" value="{{ row.goal.title }}">
-          {% include "performance/partials/duration_clock.html" with hours_name="target_hours" minutes_name="target_minutes" hours=row.target_hours minutes=row.target_mins %}
-          <div class="field">
-            <span>Color</span>
-            {% include "performance/partials/color_swatches.html" with value=row.goal.color %}
-          </div>
-          <label class="field">Notes <textarea class="field-input" name="description" rows="2">{{ row.goal.description }}</textarea></label>
-          <div>
-            <button class="btn-secondary" type="submit">Update goal</button>
-          </div>
-        </form>
-      </article>
-    {% empty %}
+              </template>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
       <p class="lede">No goals this week. Add one above, or reuse a goal from an earlier week.</p>
-    {% endfor %}
-  </div>
+    {% endif %}
+  </article>
 
   {% if previous_goals %}
     <article class="card mt-8">

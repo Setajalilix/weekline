@@ -9,6 +9,7 @@ urlpatterns = [
     path("planner/", views.planner, name="planner"),
     path("planner/goals/", views.create_goal, name="create-goal"),
     path("planner/goals/<int:pk>/", views.update_goal, name="update-goal"),
+    path("planner/goals/<int:pk>/delete/", views.delete_goal, name="delete-goal"),
     path("planner/goals/<int:pk>/sessions/", views.add_session, name="add-session"),
     path("planner/goals/<int:pk>/reuse/", views.reuse_goal, name="reuse-goal"),
     path("planner/sessions/<int:pk>/move/", views.move_session, name="move-session"),

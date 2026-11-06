@@ -85,6 +85,10 @@ class PlanningService:
     def delete_session(session: PlannedSession):
         session.delete()
 
+    @staticmethod
+    def delete_goal(goal: WeeklyGoal):
+        goal.delete()
+
     @classmethod
     @transaction.atomic
     def reuse_goal(cls, source_goal: WeeklyGoal, target_plan: WeeklyPlan) -> WeeklyGoal:

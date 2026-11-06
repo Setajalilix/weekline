@@ -1,0 +1,40 @@
+<div
+  class="time-wheels"
+  x-data="durationWheels({{ hours|default_if_none:1 }}, {{ minutes|default_if_none:0 }})"
+  x-init="ready()"
+>
+  <p class="time-wheels-caption">Weekly target</p>
+  <p class="time-wheels-readout tabular" x-text="label"></p>
+  <div class="time-wheels-face">
+    <div class="time-wheel" x-ref="hours" @scroll="sync('hours')">
+      <div class="time-wheel-pad"></div>
+      <template x-for="n in hoursList" :key="'h'+n">
+        <button
+          class="time-wheel-item"
+          type="button"
+          :class="h === n && 'is-on'"
+          @click="pick('hours', n)"
+          x-text="n"
+        ></button>
+      </template>
+      <div class="time-wheel-pad"></div>
+    </div>
+    <span class="time-wheel-unit">h</span>
+    <div class="time-wheel" x-ref="minutes" @scroll="sync('minutes')">
+      <div class="time-wheel-pad"></div>
+      <template x-for="n in minutesList" :key="'m'+n">
+        <button
+          class="time-wheel-item"
+          type="button"
+          :class="m === n && 'is-on'"
+          @click="pick('minutes', n)"
+          x-text="String(n).padStart(2, '0')"
+        ></button>
+      </template>
+      <div class="time-wheel-pad"></div>
+    </div>
+    <span class="time-wheel-unit">m</span>
+  </div>
+  <input type="hidden" name="{{ hours_name|default:'hours' }}" :value="h">
+  <input type="hidden" name="{{ minutes_name|default:'minutes' }}" :value="m">
+</div>
