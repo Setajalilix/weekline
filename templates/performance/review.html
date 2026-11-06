@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load weekline %}
+
+{% block title %}Weekly Review · Weekline{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-6xl">
+  <header>
+    <p class="eyebrow">Weekly review</p>
+    <h1 class="display">{{ plan.starts_on|date:"M j" }} – {{ plan.ends_on|date:"M j, Y" }}</h1>
+  </header>
+
+  <div class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    {% include "performance/partials/stat.html" with label="Target" value=report.target_minutes|duration %}
+    {% include "performance/partials/stat.html" with label="Actual" value=report.actual_minutes|duration %}
+    {% include "performance/partials/stat.html" with label="Achievement" value=report.achievement|pct %}
+    {% include "performance/partials/stat.html" with label="Completed" value=report.completed_count %}
+  </div>
+
+  <p class="mt-6 max-w-3xl text-sm text-mist">
+    You tracked {{ report.actual_minutes|duration }} toward {{ report.target_minutes|duration }}
+    ({{ report.achievement|pct }}). That can go past 100%.
+    Manual logs: {{ report.manual_minutes|duration }}. Timer: {{ report.timer_minutes|duration }}.
+  </p>
+
+  <div class="mt-8 grid gap-6 lg:grid-cols-2">
+    <article class="card">
+      <h2 class="section-title">Daily performance</h2>
+      <div class="chart-frame">
+        <canvas id="review-daily-chart" data-chart='{{ chart_json }}'></canvas>
+      </div>
+    </article>
+    <article class="card">
+      <h2 class="section-title">Manual vs timer</h2>
+      <div class="chart-frame">
+        <canvas id="review-source-chart" data-chart='{{ chart_json }}'></canvas>
+      </div>
+    </article>
+  </div>
+
+  <div class="mt-8 grid gap-6 lg:grid-cols-3">
+    <article class="card p-6">
+      <h2 class="section-title">Completed</h2>
+      {% for row in report.goals %}
+        {% if row.status == "completed" %}<p class="mt-3">{{ row.goal.title }} · {{ row.achievement|pct }}</p>{% endif %}
+      {% empty %}
+      {% endfor %}
+    </article>
+    <article class="card p-6">
+      <h2 class="section-title">Partial</h2>
+      {% for row in report.goals %}
+        {% if row.status == "partial" %}<p class="mt-3">{{ row.goal.title }} · {{ row.achievement|pct }}</p>{% endif %}
+      {% endfor %}
+    </article>
+    <article class="card p-6">
+      <h2 class="section-title">No progress</h2>
+      {% for row in report.goals %}
+        {% if row.status == "none" %}<p class="mt-3">{{ row.goal.title }}</p>{% endif %}
+      {% endfor %}
+    </article>
+  </div>
+
+  <article class="card mt-8 p-6">
+    <h2 class="section-title">Goal comparison</h2>
+    <div class="mt-6 space-y-4">
+      {% for row in report.goals %}
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <p>{{ row.goal.title }}</p>
+          <p class="tabular text-sm text-mist">{{ row.actual_minutes|duration }} / {{ row.target_minutes|duration }} · {{ row.achievement|pct }}</p>
+        </div>
+      {% empty %}
+        <p class="text-sm text-mist">No goals this week to compare.</p>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+{% endblock %}

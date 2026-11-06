@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Settings · Weekline{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-3xl space-y-8">
+  <header>
+    <p class="eyebrow">You</p>
+    <h1 class="display">Settings</h1>
+  </header>
+
+  <article class="card">
+    <h2 class="section-title">Week and time zone</h2>
+    <p class="lede">A new week-start day only applies to weeks you haven’t created yet.</p>
+    <form method="post" class="mt-6 grid gap-4">
+      {% csrf_token %}
+      <input type="hidden" name="form" value="settings">
+      {% for field in form %}
+        <label class="field">
+          <span>{{ field.label }}</span>
+          {{ field }}
+        </label>
+      {% endfor %}
+      <button class="btn-primary w-fit" type="submit">Save settings</button>
+    </form>
+  </article>
+
+  <article class="card">
+    <h2 class="section-title">Password</h2>
+    <form method="post" class="mt-6 grid gap-4">
+      {% csrf_token %}
+      <input type="hidden" name="form" value="password">
+      {% for field in password_form %}
+        <label class="field">
+          <span>{{ field.label }}</span>
+          {{ field }}
+        </label>
+      {% endfor %}
+      <button class="btn-secondary w-fit" type="submit">Update password</button>
+    </form>
+  </article>
+
+  <article class="card">
+    <h2 class="section-title">Categories</h2>
+    <ul class="category-list">
+      {% for category in categories %}
+        <li>
+          <span class="swatch is-selected" style="background: {{ category.color }}"></span>
+          <span>{{ category.name }}</span>
+          <form method="post" action="{% url 'delete-category' category.pk %}">
+            {% csrf_token %}
+            <button class="btn-ghost" type="submit">Delete</button>
+          </form>
+        </li>
+      {% empty %}
+        <li class="lede">No categories yet. Add one below.</li>
+      {% endfor %}
+    </ul>
+    <form method="post" action="{% url 'create-category' %}" class="log-form">
+      {% csrf_token %}
+      <label class="field field-wide">
+        <span>{{ category_form.name.label }}</span>
+        {{ category_form.name }}
+      </label>
+      <div class="field field-wide">
+        <span>Color</span>
+        {% include "performance/partials/color_swatches.html" with value=category_form.initial.color %}
+      </div>
+      <button class="btn-secondary w-fit" type="submit">Add category</button>
+    </form>
+  </article>
+</section>
+{% endblock %}

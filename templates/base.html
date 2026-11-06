@@ -1,0 +1,41 @@
+{% load django_vite %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Weekline{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    {% vite_hmr_client %}
+    {% vite_asset 'src/js/app.js' %}
+  </head>
+  <body class="{% block body_class %}{% endblock %}" x-data="{ navOpen: false }">
+    <div class="app-shell">
+      <aside class="app-sidebar">
+        {% include "partials/nav.html" %}
+      </aside>
+      <div class="flex min-w-0 flex-1 flex-col">
+        <header class="app-topbar">
+          <a href="/" class="font-semibold tracking-tight">Weekline</a>
+          <button class="pressable rounded-lg px-3 py-2 text-sm text-mist" type="button" @click="navOpen = !navOpen">Menu</button>
+        </header>
+        <div x-show="navOpen" x-cloak class="lg:hidden border-b border-white/6 bg-surface px-4 py-3">
+          {% include "partials/nav.html" %}
+        </div>
+        <main class="app-main {% block main_class %}{% endblock %}">
+          {% if messages %}
+            <div class="mb-6 space-y-2">
+              {% for message in messages %}
+                <div class="toast">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+          {% block content %}{% endblock %}
+        </main>
+      </div>
+    </div>
+    {% csrf_token %}
+  </body>
+</html>

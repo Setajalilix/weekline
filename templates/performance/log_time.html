@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Log time · Weekline{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-2xl">
+  <header>
+    <p class="eyebrow">Manual log</p>
+    <h1 class="display">Log time</h1>
+    <p class="lede">Add work you already finished. You don’t need the timer.</p>
+  </header>
+  <article class="card mt-8">
+    {% include "performance/partials/entry_form.html" with next="/calendar/" %}
+  </article>
+</section>
+{% endblock %}

@@ -1,0 +1,34 @@
+from django.urls import path
+
+from performance import views
+
+urlpatterns = [
+    path("login/", views.WeeklineLoginView.as_view(), name="login"),
+    path("logout/", views.WeeklineLogoutView.as_view(), name="logout"),
+    path("", views.overview, name="overview"),
+    path("planner/", views.planner, name="planner"),
+    path("planner/goals/", views.create_goal, name="create-goal"),
+    path("planner/goals/<int:pk>/", views.update_goal, name="update-goal"),
+    path("planner/goals/<int:pk>/sessions/", views.add_session, name="add-session"),
+    path("planner/goals/<int:pk>/reuse/", views.reuse_goal, name="reuse-goal"),
+    path("planner/sessions/<int:pk>/move/", views.move_session, name="move-session"),
+    path("planner/sessions/<int:pk>/delete/", views.delete_session, name="delete-session"),
+    path("calendar/", views.calendar, name="calendar"),
+    path("daily/", views.daily, name="daily"),
+    path("entries/", views.log_entry, name="log-entry"),
+    path("entries/<int:pk>/", views.edit_entry, name="edit-entry"),
+    path("entries/<int:pk>/delete/", views.delete_entry, name="delete-entry"),
+    path("timer/", views.timer, name="timer"),
+    path("timer/state/", views.timer_state, name="timer-state"),
+    path("timer/start/", views.timer_start, name="timer-start"),
+    path("timer/start/<int:pk>/", views.timer_start_goal, name="timer-start-goal"),
+    path("timer/pause/", views.timer_pause, name="timer-pause"),
+    path("timer/resume/", views.timer_resume, name="timer-resume"),
+    path("timer/reset/", views.timer_reset, name="timer-reset"),
+    path("timer/finish/", views.timer_finish, name="timer-finish"),
+    path("review/", views.review, name="review"),
+    path("history/", views.history, name="history"),
+    path("settings/", views.settings_view, name="settings"),
+    path("settings/categories/", views.create_category, name="create-category"),
+    path("settings/categories/<int:pk>/delete/", views.delete_category, name="delete-category"),
+]

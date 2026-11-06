@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Calendar · Weekline{% endblock %}
+{% block body_class %}is-calendar{% endblock %}
+{% block main_class %}app-main-calendar{% endblock %}
+
+{% block content %}
+<section class="cal-app">
+  <header class="cal-toolbar">
+    <div class="cal-toolbar-start">
+      <p class="eyebrow">Calendar</p>
+      <h1 class="cal-title">{{ plan.starts_on|date:"M j" }} – {{ plan.ends_on|date:"M j, Y" }}</h1>
+    </div>
+    <div class="cal-toolbar-actions">
+      <a class="btn-secondary" href="{% url 'calendar' %}">Today</a>
+      <a class="btn-ghost" href="{% url 'calendar' %}?week={{ prev_week.isoformat }}" aria-label="Previous week">‹</a>
+      <a class="btn-ghost" href="{% url 'calendar' %}?week={{ next_week.isoformat }}" aria-label="Next week">›</a>
+      <a class="btn-primary" href="{% url 'log-entry' %}">Log time</a>
+    </div>
+  </header>
+
+  <div class="cal-body">
+    <aside class="cal-aside">
+      <div class="cal-month">
+        <div class="cal-month-head">
+          <a href="{% url 'calendar' %}?week={{ plan.starts_on.isoformat }}&month={{ prev_month|date:'Y-m' }}" aria-label="Previous month">‹</a>
+          <strong>{{ month|date:"F Y" }}</strong>
+          <a href="{% url 'calendar' %}?week={{ plan.starts_on.isoformat }}&month={{ next_month|date:'Y-m' }}" aria-label="Next month">›</a>
+        </div>
+        <div class="cal-month-grid">
+          {% for label in weekday_labels %}
+            <span class="cal-month-dow">{{ label|slice:":1" }}</span>
+          {% endfor %}
+          {% for week in month_weeks %}
+            {% for cell in week %}
+              {% if cell %}
+                <a
+                  class="cal-month-day {% if cell.date == today %}is-today{% endif %} {% if cell.date >= plan.starts_on and cell.date <= plan.ends_on %}is-week{% endif %}"
+                  href="{% url 'calendar' %}?week={{ cell.week_start.isoformat }}"
+                >{{ cell.date.day }}</a>
+              {% else %}
+                <span></span>
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        </div>
+      </div>
+      <div class="cal-legend">
+        <p class="section-title">Categories</p>
+        {% if categories %}
+          <ul>
+            {% for category in categories %}
+              <li>
+                <span class="cal-dot" style="background: {{ category.color }}"></span>
+                {{ category.name }}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="lede">Colors follow each goal.</p>
+        {% endif %}
+      </div>
+    </aside>
+
+    <div class="cal-board">
+      <div class="cal-table">
+        <div class="cal-corner">
+          <span>{{ tz_label }}</span>
+        </div>
+        {% for day in days %}
+          <div class="cal-day-head {% if day.is_today %}is-today{% endif %}">
+            <span>{{ day.date|date:"D"|upper }}</span>
+            <strong>{{ day.date.day }}</strong>
+          </div>
+        {% endfor %}
+
+        <div class="cal-hours" aria-hidden="true">
+          {% for hour in hours %}
+            <div class="cal-hour-label">
+              <span>{{ hour }}</span>
+            </div>
+          {% endfor %}
+        </div>
+
+        {% for day in days %}
+          <div class="cal-day {% if day.is_today %}is-today{% endif %}">
+            {% for hour in hours %}
+              <a
+                class="cal-slot"
+                href="{% url 'log-entry' %}?date={{ day.date.isoformat }}&start={% if hour == 24 %}00:00{% else %}{{ hour|stringformat:'02d' }}:00{% endif %}"
+                aria-label="Log time on {{ day.date|date:'M j' }} at {{ hour }}:00"
+              ></a>
+            {% endfor %}
+            {% if day.is_today and now_top != None %}
+              <div class="cal-now" style="top: {{ now_top }}%"></div>
+            {% endif %}
+            {% if day.all_day %}
+              <div class="cal-chips">
+                {% for item in day.all_day %}
+                  <a class="cal-chip" href="{{ item.href }}" style="background: {{ item.color }}">{{ item.title }}</a>
+                {% endfor %}
+              </div>
+            {% endif %}
+            {% for event in day.events %}
+              <a class="cal-event" href="{{ event.href }}" style="{{ event.style }}">
+                <strong>{{ event.title }}</strong>
+                <span>{{ event.time_label }}</span>
+              </a>
+            {% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

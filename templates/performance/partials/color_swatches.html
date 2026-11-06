@@ -1,0 +1,13 @@
+<div class="swatch-row" x-data="{ color: '{{ value|default:'#B8A0FF' }}' }">
+  <input type="hidden" name="{{ name|default:'color' }}" :value="color">
+  {% for swatch in color_swatches %}
+    <button
+      class="swatch"
+      type="button"
+      style="background: {{ swatch }}"
+      :class="color === '{{ swatch }}' && 'is-selected'"
+      @click="color = '{{ swatch }}'"
+      aria-label="Choose {{ swatch }}"
+    ></button>
+  {% endfor %}
+</div>

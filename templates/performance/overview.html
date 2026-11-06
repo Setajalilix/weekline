@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load weekline %}
+
+{% block title %}Overview · Weekline{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-6xl">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="eyebrow">This week</p>
+      <h1 class="display">{{ plan.starts_on|date:"M j" }} – {{ plan.ends_on|date:"M j, Y" }}</h1>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <a class="btn-secondary" href="{% url 'log-entry' %}">Log time</a>
+      <a class="btn-primary" href="{% url 'timer' %}">Start timer</a>
+    </div>
+  </header>
+
+  <div class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    {% include "performance/partials/stat.html" with label="Weekly target" value=report.target_minutes|duration %}
+    {% include "performance/partials/stat.html" with label="Tracked" value=report.actual_minutes|duration %}
+    {% include "performance/partials/stat.html" with label="Achievement" value=report.achievement|pct %}
+    {% include "performance/partials/stat.html" with label="Remaining" value=report.remaining_minutes|duration %}
+  </div>
+
+  <div class="mt-4 grid gap-4 sm:grid-cols-3">
+    {% include "performance/partials/stat.html" with label="Completed goals" value=report.completed_count %}
+    {% include "performance/partials/stat.html" with label="Active goals" value=report.active_count %}
+    {% include "performance/partials/stat.html" with label="No progress" value=report.none_count %}
+  </div>
+
+  <div class="mt-8 grid gap-6 lg:grid-cols-5">
+    <article class="card lg:col-span-3">
+      <h2 class="section-title">Weekly activity</h2>
+      <div class="chart-frame">
+        <canvas id="week-chart" data-chart='{{ chart_json }}'></canvas>
+      </div>
+    </article>
+    <article class="card lg:col-span-2 p-6">
+      <h2 class="section-title">Today</h2>
+      <p class="mt-1 text-sm text-mist">{{ today.date|date:"l, M j" }}</p>
+      <div class="mt-5">
+        <p class="text-xs uppercase tracking-wider text-mist">Planned</p>
+        {% if today.sessions %}
+          <ul class="mt-3 space-y-2">
+            {% for session in today.sessions %}
+              <li class="flex items-center justify-between rounded-xl bg-ink/50 px-3 py-2">
+                <span>{{ session.goal.title }}</span>
+                <span class="tabular">{{ session.duration_minutes|duration }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="mt-3 text-sm text-mist">Nothing planned today. Add a day in Weekly Planner.</p>
+        {% endif %}
+      </div>
+      <div class="mt-6">
+        <p class="text-xs uppercase tracking-wider text-mist">Tracked</p>
+        {% if today.entries %}
+          <ul class="mt-3 space-y-2">
+            {% for entry in today.entries %}
+              <li class="flex items-center justify-between rounded-xl bg-ink/50 px-3 py-2">
+                <span>{{ entry.activity_title }}</span>
+                <span class="tabular">{{ entry.duration_minutes|duration }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="mt-3 text-sm text-mist">No time yet today. Log time or start the timer.</p>
+        {% endif %}
+      </div>
+    </article>
+  </div>
+
+  <article class="card mt-6 p-6">
+    <h2 class="section-title">Goal progress</h2>
+    <div class="mt-6 space-y-4">
+      {% for row in report.goals %}
+        <div>
+          <div class="flex items-center justify-between gap-3">
+            <p class="font-medium">{{ row.goal.title }}</p>
+            <p class="tabular text-sm text-mist">{{ row.actual_minutes|duration }} / {{ row.target_minutes|duration }} · {{ row.achievement|pct }}</p>
+          </div>
+          <div class="progress mt-2"><span style="width: {{ row.achievement|floatformat:0 }}%; background: {{ row.goal.color }}"></span></div>
+        </div>
+      {% empty %}
+        <p class="text-sm text-mist">No goals this week. Open Weekly Planner to add one.</p>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+{% endblock %}

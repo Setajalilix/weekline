@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load weekline %}
+
+{% block title %}History · Weekline{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-4xl">
+  <header>
+    <p class="eyebrow">Past weeks</p>
+    <h1 class="display">History</h1>
+    <p class="lede">Earlier weeks stay as you left them. Unfinished goals don’t roll forward.</p>
+  </header>
+  <div class="mt-8 space-y-3">
+    {% for plan in plans %}
+      <a class="card block p-5 hover:border-accent/40" href="{% url 'review' %}?week={{ plan.starts_on.isoformat }}">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p class="font-medium">{{ plan.starts_on|date:"M j" }} – {{ plan.ends_on|date:"M j, Y" }}</p>
+            <p class="text-sm text-mist">Week starts on {{ plan.get_week_starts_on_display }}</p>
+          </div>
+          <p class="tabular text-sm">{{ plan.actual_minutes|default:0|duration }} tracked</p>
+        </div>
+      </a>
+    {% empty %}
+      <p class="lede">No weeks yet. Open Overview to start this week.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

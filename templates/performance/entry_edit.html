@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Edit entry · Weekline{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-2xl">
+  <p class="eyebrow">Time entry</p>
+  <h1 class="display">Edit time</h1>
+  <article class="card mt-8">
+    {% include "performance/partials/entry_form.html" %}
+  </article>
+  <p class="lede mt-4">The original activity name stays on this entry.</p>
+</section>
+{% endblock %}

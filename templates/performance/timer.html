@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Focus Timer · Weekline{% endblock %}
+
+{% block content %}
+<section class="timer-page">
+  {% if session %}
+    <p class="timer-kicker">{% if session.status == "running" %}Focusing{% else %}Paused{% endif %}</p>
+    <h1 class="timer-title">{{ session.activity_title }}</h1>
+  {% else %}
+    <p class="timer-kicker">Timer</p>
+    <h1 class="timer-title">Start a session</h1>
+  {% endif %}
+
+  <div id="timer-stage" class="flip-stage" data-timer-state='{{ timer_state }}'>
+    {% include "performance/partials/flip_clock.html" %}
+  </div>
+
+  <div class="flip-controls">
+    {% if not session %}
+      <form method="post" action="{% url 'timer-start' %}" class="timer-start">
+        {% csrf_token %}
+        <label class="field">
+          <span>{{ start_form.activity.label }}</span>
+          {{ start_form.activity }}
+        </label>
+        <label class="field">
+          <span>{{ start_form.weekly_goal.label }}</span>
+          {{ start_form.weekly_goal }}
+        </label>
+        <button class="btn-flip" type="submit">Start</button>
+      </form>
+    {% elif session.status == "running" %}
+      <form method="post" action="{% url 'timer-pause' %}">{% csrf_token %}<button class="btn-flip" type="submit">Pause</button></form>
+    {% elif session.status == "paused" %}
+      <form method="post" action="{% url 'timer-resume' %}">{% csrf_token %}<button class="btn-flip btn-flip-primary" type="submit">Resume</button></form>
+    {% endif %}
+    {% if session %}
+      <button class="btn-flip-ghost" type="button" id="fullscreen-timer">Fullscreen</button>
+      <form method="post" action="{% url 'timer-reset' %}">{% csrf_token %}<button class="btn-flip-ghost" type="submit">Reset</button></form>
+    {% endif %}
+  </div>
+
+  {% if session and finish_form %}
+    <article class="card finish-card">
+      <h2 class="section-title">Save session</h2>
+      <p class="lede">Adjust the time if you need to, then save. Saving twice won’t duplicate it.</p>
+      <form method="post" action="{% url 'timer-finish' %}" class="log-form">
+        {% csrf_token %}
+        {% include "performance/partials/duration_clock.html" with hours=finish_form.hours.value minutes=finish_form.minutes.value %}
+        <div class="log-fields">
+          <label class="field">
+            <span>{{ finish_form.tracked_date.label }}</span>
+            {{ finish_form.tracked_date }}
+          </label>
+          <label class="field field-wide">
+            <span>{{ finish_form.note.label }}</span>
+            {{ finish_form.note }}
+          </label>
+        </div>
+        <button class="btn-primary" type="submit">Save session</button>
+      </form>
+    </article>
+  {% endif %}
+</section>
+{% endblock %}

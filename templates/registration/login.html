@@ -1,0 +1,34 @@
+{% load django_vite %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sign in · Weekline</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    {% vite_hmr_client %}
+    {% vite_asset 'src/js/app.js' %}
+  </head>
+  <body class="auth-screen">
+    <section class="card auth-card">
+      <p class="eyebrow">Weekline</p>
+      <h1 class="display">Sign in</h1>
+      <p class="lede">Sign in to plan your week and track time.</p>
+      <form method="post" class="auth-form">
+        {% csrf_token %}
+        {% for field in form %}
+          <label class="field">
+            <span>{{ field.label }}</span>
+            {{ field }}
+          </label>
+        {% endfor %}
+        {% if form.non_field_errors %}
+          <p class="text-sm text-rose-300">{{ form.non_field_errors.0 }}</p>
+        {% endif %}
+        <button class="btn-primary w-full" type="submit">Continue</button>
+      </form>
+    </section>
+  </body>
+</html>

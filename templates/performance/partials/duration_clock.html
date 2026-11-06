@@ -1,0 +1,42 @@
+<div
+  class="range-clock"
+  x-data="rangeClock({{ hours|default_if_none:1 }}, {{ minutes|default_if_none:0 }}, '{{ starts_at|default:'' }}')"
+>
+  <p class="range-clock-caption">{% if timed %}Drag the handles to set start and finish.{% else %}Set how long this should take.{% endif %}</p>
+  <div class="range-clock-stage" x-ref="face">
+    <svg class="range-clock-svg" viewBox="0 0 200 200" aria-hidden="true">
+      <circle class="range-clock-track" cx="100" cy="100" r="78"></circle>
+      <path class="range-clock-arc" :d="arcPath"></path>
+    </svg>
+    <template x-for="n in [12,1,2,3,4,5,6,7,8,9,10,11]" :key="n">
+      <span class="range-clock-num" :style="numStyle(n)" x-text="n"></span>
+    </template>
+    <div class="range-clock-center">
+      <strong class="tabular" x-text="durationLabel"></strong>
+      <span x-text="rangeLabel"></span>
+    </div>
+    <button
+      class="range-handle range-handle-start"
+      type="button"
+      aria-label="Start time"
+      :style="handleStyle(start)"
+      @pointerdown="grab('start', $event)"
+    ></button>
+    <button
+      class="range-handle range-handle-end"
+      type="button"
+      aria-label="Finish time"
+      :style="handleStyle(end)"
+      @pointerdown="grab('end', $event)"
+    ></button>
+  </div>
+  {% if timed %}
+    <div class="range-period">
+      <button type="button" :class="period === 'am' && 'is-on'" @click="period = 'am'">AM</button>
+      <button type="button" :class="period === 'pm' && 'is-on'" @click="period = 'pm'">PM</button>
+    </div>
+    <input type="hidden" name="starts_at" :value="startsAtValue">
+  {% endif %}
+  <input type="hidden" name="{{ hours_name|default:'hours' }}" :value="h">
+  <input type="hidden" name="{{ minutes_name|default:'minutes' }}" :value="m">
+</div>
