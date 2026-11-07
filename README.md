@@ -50,7 +50,7 @@ No REST API. No React, Next, or Vue.
 ## Quick start
 
 ```bash
-git clone https://github.com/YOUR_USER/weekline.git
+git clone https://github.com/Setajalilix/weekline.git
 cd weekline
 ```
 
@@ -190,7 +190,7 @@ git init
 git add .
 git commit -m "Publish Weekline"
 git branch -M main
-git remote add origin https://github.com/YOUR_USER/weekline.git
+git remote add origin https://github.com/Setajalilix/weekline.git
 git push -u origin main
 ```
 
