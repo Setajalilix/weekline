@@ -2,16 +2,6 @@
 
 Plan your week, log time by hand or with a flip-clock timer, and see how it actually went.
 
-Weekline is a **single-user** weekly performance tracker. It is a Django app with server-rendered pages — not a React SPA, and not a public multi-user product.
-
-**GitHub description** (About field, 350-character limit):
-
-> Plan your week, log time by hand or with a flip-clock timer, and see how it actually went.
-
-**Suggested topics:** `django` `postgresql` `htmx` `alpinejs` `tailwindcss` `time-tracking` `productivity`
-
----
-
 ## What you can do
 
 - Set weekly goals with a target, color, and optional category
